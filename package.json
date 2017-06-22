@@ -1,0 +1,22 @@
+{
+  "name": "release-unity-package",
+  "version": "1.0.0",
+  "description": "A command-line tool to publish approved Unity packages to the production registry",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "Cristian Pilat <cristian.pilat@unity3d.com>",
+  "license": "MIT",
+  "bin": {
+    "release-unity-package": "./index.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/UnityTech/release-package"
+  },
+  "dependencies": {
+    "inquirer": "^3.1.1",
+    "shelljs": "^0.7.8"
+  }
+}
