@@ -1,9 +1,11 @@
 #!/usr/bin/env node --harmony
 var shell = require('shelljs');
 var inquirer = require('inquirer');
+var tmp = require('tmp');
 
-shell.mkdir('-p', '/tmp/unity-release-script/');
-shell.cd('/tmp/unity-release-script');
+var tmpDir = tmp.dirSync();
+console.log("Temporary directory: ", tmpDir.name);
+shell.cd(tmpDir.name);
 
 var questions = [
 	{
