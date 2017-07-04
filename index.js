@@ -44,7 +44,12 @@ inquirer.prompt(questions).then(function (answers) {
 
 	function callback(error, response, body) {
 	    if (!error && response.statusCode == 200) {
-	        fs.writeFile(file, body);
+	    	try {
+	    		fs.writeFileSync(file, body);
+	    	} catch (err) {
+	    		console.error(err);
+	    		process.exit(1);
+	    	}
 	    } else {
 	    	console.error(response.body);
 	    	process.exit(1);
