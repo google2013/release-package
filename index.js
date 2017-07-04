@@ -1,10 +1,11 @@
 #!/usr/bin/env node --harmony
-var shell = require('shelljs');
+var fs = require('fs');
 var inquirer = require('inquirer');
+var request = require('request');
+var shell = require('shelljs');
 var tmp = require('tmp');
 
 var tmpDir = tmp.dirSync();
-console.log("Temporary directory: ", tmpDir.name);
 shell.cd(tmpDir.name);
 
 var questions = [
@@ -31,8 +32,26 @@ var questions = [
 ];
 
 inquirer.prompt(questions).then(function (answers) {
-	shell.exec('curl -u ' + Object.values(answers)[0] + ':' + Object.values(answers)[1] +
-		' https://api.bintray.com/npm/unity/unity/auth > .npmrc', {silent:true});
+	var options = {
+	    url: 'https://api.bintray.com/npm/unity/unity/auth',
+	    auth: {
+	        'user': Object.values(answers)[0],
+	        'pass': Object.values(answers)[1]
+	    }
+	};
+
+	var file = '.npmrc';
+
+	function callback(error, response, body) {
+	    if (!error && response.statusCode == 200) {
+	        fs.writeFile(file, body);
+	    } else {
+	    	console.error(response.body);
+	    	process.exit(1);
+	    }
+	}
+
+	request(options, callback);
 
 	shell.exec('npm pack ' + Object.values(answers)[2] + '@' + Object.values(answers)[3] +
 		' --registry http://staging-packages.unity.com', {silent:true}, function(code, stdout, stderr) {
