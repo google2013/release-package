@@ -45,7 +45,7 @@ inquirer.prompt(questions).then(function (answers) {
 	function callback(error, response, body) {
 	    if (!error && response.statusCode == 200) {
 	    	try {
-	    		fs.writeFileSync(file, body);
+	    		fs.writeFile(file, body);
 	    	} catch (err) {
 	    		console.error(err);
 	    		process.exit(1);
@@ -54,27 +54,33 @@ inquirer.prompt(questions).then(function (answers) {
 	    	console.error(response.body);
 	    	process.exit(1);
 	    }
+
+	    afterRequest();
 	}
 
 	request(options, callback);
 
-	shell.exec('npm pack ' + Object.values(answers)[2] + '@' + Object.values(answers)[3] +
-		' --registry http://staging-packages.unity.com', {silent:true}, function(code, stdout, stderr) {
-		if (code !== 0) {
-		  console.error(stderr);
-		  process.exit(1);
-		} else {
-		  process.exit(0);
-		}
-	});
+	function afterRequest() {
+		shell.exec('npm pack ' + Object.values(answers)[2] + '@' + Object.values(answers)[3] +
+			' --registry http://staging-packages.unity.com',
+			{silent:true, async:true}, function(code, stdout, stderr) {
+			if (code !== 0) {
+			  console.error(stderr);
+			  process.exit(1);
+			} else {
+			  process.exit(0);
+			}
+		});
 
-	shell.exec('npm publish ' + Object.values(answers)[2] + '-' + Object.values(answers)[3] + '.tgz' + 
-		' --registry https://packages.unity.com', {silent:true}, function(code, stdout, stderr) {
-		if (code !== 0) {
-		  console.error(stderr);
-		  process.exit(1);
-		} else {
-		  process.exit(0);
-		}
-	});
+		shell.exec('npm publish ' + Object.values(answers)[2] + '-' + Object.values(answers)[3] +
+			'.tgz' + ' --registry https://packages.unity.com',
+			{silent:true, async:true}, function(code, stdout, stderr) {
+			if (code !== 0) {
+			  console.error(stderr);
+			  process.exit(1);
+			} else {
+			  process.exit(0);
+			}
+		});
+	}
 });
