@@ -61,7 +61,8 @@ inquirer.prompt(questions).then(function (answers) {
 	request(options, callback);
 
 	function afterRequest() {
-		shell.exec('npm pack ' + Object.values(answers)[2] + '@' + Object.values(answers)[3] +
+		shell.exec('npm pack ' + Object.values(answers)[2] +
+			'@' + Object.values(answers)[3] +
 			' --registry http://staging-packages.unity.com',
 			{silent:true, async:true}, function(code, stdout, stderr) {
 			if (code !== 0) {
@@ -70,17 +71,22 @@ inquirer.prompt(questions).then(function (answers) {
 			} else {
 			  process.exit(0);
 			}
+
+			publishAfterPack();
 		});
 
-		shell.exec('npm publish ' + Object.values(answers)[2] + '-' + Object.values(answers)[3] +
-			'.tgz' + ' --registry https://packages.unity.com',
-			{silent:true, async:true}, function(code, stdout, stderr) {
-			if (code !== 0) {
-			  console.error(stderr);
-			  process.exit(1);
-			} else {
-			  process.exit(0);
-			}
-		});
+		function publishAfterPack() {
+			shell.exec('npm publish ' + Object.values(answers)[2] +
+				'-' + Object.values(answers)[3] +
+				'.tgz' + ' --registry https://packages.unity.com',
+				{silent:true, async:true}, function(code, stdout, stderr) {
+				if (code !== 0) {
+				  console.error(stderr);
+				  process.exit(1);
+				} else {
+				  process.exit(0);
+				}
+			});
+		}
 	}
 });
