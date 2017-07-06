@@ -7,6 +7,7 @@ var tmp = require('tmp');
 
 var tmpDir = tmp.dirSync();
 shell.cd(tmpDir.name);
+const file = '.npmrc';
 
 var questions = [
 	{
@@ -35,17 +36,17 @@ inquirer.prompt(questions).then(function (answers) {
 	var options = {
 	    url: 'https://api.bintray.com/npm/unity/unity/auth',
 	    auth: {
-	        'user': Object.values(answers)[0],
-	        'pass': Object.values(answers)[1]
+	        'user': answers.username,
+	        'pass': answers.apikey
 	    }
 	};
 
-	var file = '.npmrc';
+	request(options, authCallback);
 
-	function callback(error, response, body) {
+	function authCallback(error, response, body) {
 	    if (!error && response.statusCode == 200) {
 	    	try {
-	    		fs.writeFile(file, body);
+	    		fs.writeFileSync(file, body);
 	    	} catch (err) {
 	    		console.error(err);
 	    		process.exit(1);
@@ -54,16 +55,26 @@ inquirer.prompt(questions).then(function (answers) {
 	    	console.error(response.body);
 	    	process.exit(1);
 	    }
-
-	    afterRequest();
+	    fetchPackage();
 	}
 
-	request(options, callback);
-
-	function afterRequest() {
-		shell.exec('npm pack ' + Object.values(answers)[2] +
-			'@' + Object.values(answers)[3] +
+	function fetchPackage() {
+		shell.exec('npm pack ' + answers.package +
+			'@' + answers.version +
 			' --registry http://staging-packages.unity.com',
+			{silent:true, async:true}, function(code, stdout, stderr) {
+			if (code !== 0) {
+			  console.error(stderr);
+			  process.exit(1);
+			}
+			publishPackage();
+		});
+	}
+
+	function publishPackage() {
+		shell.exec('npm publish ' + answers.package +
+			'-' + answers.version +
+			'.tgz' + ' --registry https://packages.unity.com',
 			{silent:true, async:true}, function(code, stdout, stderr) {
 			if (code !== 0) {
 			  console.error(stderr);
@@ -71,22 +82,6 @@ inquirer.prompt(questions).then(function (answers) {
 			} else {
 			  process.exit(0);
 			}
-
-			publishAfterPack();
 		});
-
-		function publishAfterPack() {
-			shell.exec('npm publish ' + Object.values(answers)[2] +
-				'-' + Object.values(answers)[3] +
-				'.tgz' + ' --registry https://packages.unity.com',
-				{silent:true, async:true}, function(code, stdout, stderr) {
-				if (code !== 0) {
-				  console.error(stderr);
-				  process.exit(1);
-				} else {
-				  process.exit(0);
-				}
-			});
-		}
 	}
 });
