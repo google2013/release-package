@@ -11,7 +11,7 @@ Publishing is done through the `npm` command line tool:
 * Clone this GitHub repository
 * From the `release-package` directory, install the script with:
 ```bash
-$ npm install
+$ npm install && npm link
 ```
 * Then you can run it using:
 ```bash
